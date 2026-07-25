@@ -47,6 +47,7 @@ If you already use Salesforce in VS Code, you likely have this done. Otherwise:
 
 ```bash
 sf org login web                              # a browser opens — log in to your org
+sf org login web -r https://test.salesforce.com -a QAFull
 sf config set target-org=<username-or-alias>  # make it the default
 ```
 

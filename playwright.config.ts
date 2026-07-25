@@ -1,56 +1,79 @@
 import { defineConfig, devices } from '@playwright/test';
-import 'dotenv/config';
-import { getOrgAuthInfo } from './src/utils/orgAuth.js';
-import { env } from './src/config/env.js';
 
 /**
- * Resolve the org's instance URL at config-load time so `baseURL` is dynamic —
- * it always points at whatever org is currently connected to VS Code. If the
- * CLI is unavailable (e.g. lint/typecheck in CI without an org), we fall back
- * gracefully instead of crashing the whole config.
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
  */
-function resolveBaseUrl(): string | undefined {
-  try {
-    return getOrgAuthInfo(env.targetOrg || undefined).instanceUrl;
-  } catch (err) {
-    console.warn(
-      `[playwright.config] Could not resolve org base URL: ${(err as Error).message}`,
-    );
-    return process.env.SF_INSTANCE_URL || undefined;
-  }
-}
+// import dotenv from 'dotenv';
+// import path from 'path';
+// dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './e2e',
+  /* Run tests in files in parallel */
   fullyParallel: true,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
+  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
+  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  reporter: [['html', { open: 'never' }], ['list']],
-
-  // Log into the default org once and cache the session for all tests.
-  globalSetup: './src/utils/globalSetup.ts',
-
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: 'html',
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: resolveBaseUrl(),
-    storageState: env.storageStatePath,
+    /* Base URL to use in actions like `await page.goto('')`. */
+    // baseURL: 'http://localhost:3000',
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    // Optional: point at a system-provided Chromium (e.g. CI images that
-    // pre-install browsers). Unset on a normal dev machine.
-    launchOptions: process.env.PW_EXECUTABLE_PATH
-      ? { executablePath: process.env.PW_EXECUTABLE_PATH }
-      : {},
-    // PW_CHANNEL=chrome runs in your installed Google Chrome instead of
-    // Playwright's bundled Chromium.
-    ...(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {}),
   },
 
+  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
+
+    /* Test against mobile viewports. */
+    // {
+    //   name: 'Mobile Chrome',
+    //   use: { ...devices['Pixel 5'] },
+    // },
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { ...devices['iPhone 12'] },
+    // },
+
+    /* Test against branded browsers. */
+    // {
+    //   name: 'Microsoft Edge',
+    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    // },
+    // {
+    //   name: 'Google Chrome',
+    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    // },
   ],
+
+  /* Run your local dev server before starting the tests */
+  // webServer: {
+  //   command: 'npm run start',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: !process.env.CI,
+  // },
 });

@@ -29,14 +29,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: [['html', { open: 'never', outputFolder: 'playwright-report-e2e' }], ['list']],
-
-  // Boot the mock org before the tests and tear it down after.
-  webServer: {
-    command: 'node tests-e2e/mock-server.mjs',
-    url: `http://127.0.0.1:${process.env.MOCK_ORG_PORT ?? 8787}/health`,
-    reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-  },
+  globalSetup: './tests-e2e/global-setup.ts',
 
   use: {
     baseURL: resolveBaseUrl(),

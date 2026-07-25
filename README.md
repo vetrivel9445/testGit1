@@ -1,436 +1,58 @@
-# Playwright Dynamic Org Login (Salesforce)
+# Salesforce DX Project
 
-A Playwright + TypeScript framework that logs into the **default Salesforce org
-connected to VS Code** — no hardcoded usernames, passwords, URLs, or file paths.
-Everything the tests touch is resolved dynamically at runtime.
+Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
 
-| Concern | How it stays dynamic |
-| --- | --- |
-| **Org login** | Reads the default org from the Salesforce CLI (`sf org display`) — the same org you set in VS Code — and logs in via `frontdoor.jsp` using the access token. No credentials are typed or stored. |
-| **Page URLs** | `openPage(page, path)` resolves relative paths against the *current* org's instance URL — works for standard and custom objects alike. |
-| **New record pages** | The `RecordForm` component fills any object's New Record form by field label, auto-detecting each control type, and verifies the save toast. |
-| **UI file uploads** | `uploadFiles()` / `uploadToLightningFileUpload()` accept any file path(s) at runtime — hidden inputs, Lightning components, and native file-chooser dialogs. |
-| **Test data** | `SfApi` creates/queries/deletes records of any object through the REST API with the same dynamic org token — fast setup and cleanup without UI clicks. |
-| **In-app navigation** | `openViaAppLauncher(page, name)` opens any app or object tab by name, exactly like a user; `waitForLightning()` waits out SLDS spinners to kill flakiness. |
+This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
 
----
+## Prerequisites
 
-# 🖼 Visual overview
+Before you start, make sure you have:
 
-## How the dynamic org login works
+- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
+- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
+- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
+- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
 
-```mermaid
-flowchart LR
-    A["VS Code<br/>(default org set)"] --> B["Salesforce CLI<br/>sf org display"]
-    B --> C["orgAuth.ts<br/>instanceUrl + accessToken"]
-    C --> D["frontdoor.jsp<br/>token → browser session"]
-    D --> E["storageState<br/>session cached once"]
-    E --> F["All tests start<br/>already logged in"]
-```
+## Project Structure
 
-## What a test run looks like
+Your DX project follows this structure:
 
-```mermaid
-flowchart TD
-    S["SfApi<br/>create test data via REST API"] --> N["openPage / openViaAppLauncher<br/>navigate dynamically"]
-    N --> R["RecordForm<br/>fill any object's form by label"]
-    R --> U["uploadFiles<br/>dynamic UI file upload"]
-    U --> V["assertions + toast checks"]
-    V --> T["SfApi<br/>delete test data"]
-```
+- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
+- **`config/`** - Scratch org definitions and project settings
+- **`scripts/`** - Automation scripts for common tasks
+- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
 
-## Screenshots from the self-contained test run
+See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
 
-These are real captures of the framework driving the built-in mock org
-(`npm run test:e2e`) — the same helpers drive your real org identically.
+## Get Started
 
-| | |
-| --- | --- |
-| **The E2E suite passing across all 6 UI test levels** (`npm run report`) | ![Test report](docs/images/05-test-report.png) |
-| **App Launcher navigation** — `openViaAppLauncher(page, 'Inv…')` filters and opens items by name | ![App Launcher](docs/images/01-app-launcher.png) |
-| **RecordForm** — custom object `Invoice__c` form filled by field label (text, textarea, picklist, checkbox auto-detected) | ![New record form](docs/images/02-record-form.png) |
-| **After `save()`** — success toast verified, record id parsed from the URL | ![Save toast](docs/images/03-save-toast.png) |
-| **Dynamic file upload** — `sample.pdf` set on the hidden Lightning input | ![File upload](docs/images/04-file-upload.png) |
+Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
 
----
+## Common Salesforce CLI Commands
 
-# 🚀 How to Use — Step by Step
+Here are common CLI commands that you'll use the most:
 
-Follow these steps in order. Each one tells you what to type and what you
-should see. No prior Playwright knowledge needed.
+- `sf org login web`: Authorize an org
+- `sf org open`: Open your org in a browser
+- `sf org create scratch`: Create a scratch org
+- `sf project deploy start`: Deploy metadata to your org
+- `sf project retrieve start`: Retrieve metadata from your org
+- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
+- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
+- `sf data <command>`: Work with test data
+- `sf alias <command>`: Manage org aliases
+- `sf config <command>`: Configure CLI settings
 
-## Step 1 — Get the project
+## Use Agentforce Vibes to Build Lightning Apps
 
-```bash
-git clone <this-repo-url>
-cd <repo-folder>
-```
+Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
 
-**Prerequisites:** [Node.js 18+](https://nodejs.org) and the
-[Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli)
-(`sf --version` to check).
+## Additional Resources
 
-## Step 2 — Install
+- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
+- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
+- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
+- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
+- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
+- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
 
-```bash
-npm install
-npx playwright install chromium
-```
-
-## Step 3 — Verify everything works (no Salesforce org needed)
-
-```bash
-npm run test:e2e
-```
-
-✅ **Expected: `33 passed, 2 skipped`.** This runs the entire framework — login,
-dynamic navigation, record creation, file upload, API data setup, App Launcher
-navigation, and the full UI test pyramid — against a built-in mock org. (The 2
-skipped tests are opt-in visual regression; see the test levels below.)
-If this passes, your machine is set up correctly. If it fails, fix this before
-going further (usually Node < 18 or the browser install).
-
-## Step 4 — Connect your Salesforce org
-
-If you already use Salesforce in VS Code, this is likely done. Otherwise:
-
-```bash
-sf org login web                              # a browser opens — log in
-sf config set target-org=<username-or-alias>  # make it the default
-```
-
-Or inside VS Code: **Ctrl/Cmd+Shift+P → "SFDX: Authorize an Org"**, then
-**"SFDX: Set a Default Org"**.
-
-## Step 5 — Check which org the framework will use
-
-```bash
-npm run org:whoami
-```
-
-✅ **Expected:**
-
-```
-Resolved default org connected to VS Code:
-  username:    you@yourcompany.com
-  instanceUrl: https://yourdomain.my.salesforce.com
-```
-
-Wrong org? Run `sf config set target-org=<the-right-alias>` and check again.
-
-## Step 6 — Run the tests against your org
-
-```bash
-npm test               # headless
-npm run test:headed    # watch the browser while it runs
-```
-
-The framework logs in once (reusing your CLI session — no password typed),
-caches the session, and every test starts already logged in.
-
-## Step 7 — See the results
-
-```bash
-npm run report
-```
-
-Opens an HTML report with every step, timings, and screenshots on failure.
-
----
-
-# 🧪 Run tests from VS Code, in Chrome — Step by Step
-
-You can run and debug every test from inside VS Code with a real Chrome
-window, without touching the terminal.
-
-## Step 1 — Install the Playwright extension
-
-1. Open VS Code in this project folder (`code .`).
-2. Go to **Extensions** (Ctrl/Cmd+Shift+X).
-3. Search for **"Playwright Test for VSCode"** (publisher: **Microsoft**) and
-   click **Install**.
-
-## Step 2 — Open the Testing panel
-
-Click the **beaker icon** 🧪 in the left sidebar (or **View → Testing**).
-All tests appear in a tree: `tests/` (your org tests) and `tests-e2e/`
-(the mock-org suite).
-
-> If the tree is empty, click the **refresh** icon at the top of the panel,
-> and make sure `npm install` has been run.
-
-## Step 3 — Choose which config to run
-
-In the Testing panel, find the **Playwright** section (bottom of the sidebar):
-
-- Under **PROJECTS**, tick **chromium**.
-- If both configs are listed, pick `playwright.e2e.config.ts` to run against
-  the mock org (no Salesforce needed) or `playwright.config.ts` for your real
-  org (do Steps 4–5 of the setup above first).
-
-## Step 4 — Make the browser visible (run in a Chrome window)
-
-In the same Playwright section, tick **"Show browser"**.
-Now every test run opens a real Chrome window you can watch.
-
-> **Want your installed Google Chrome instead of Playwright's Chromium?**
-> Run from the terminal with `PW_CHANNEL=chrome npm test` — the config picks
-> it up automatically. (Chromium and Chrome behave identically for Salesforce.)
-
-## Step 5 — Run a test
-
-- Click the **▶ play button** next to any test, file, or folder in the tree.
-- Or open a spec file — a green **▶** appears in the editor gutter next to
-  each `test(...)`. Click it to run just that test.
-- ✅ Pass = green check; ❌ fail = red cross with the error inline in the editor.
-
-## Step 6 — Debug a test with breakpoints
-
-1. Click in the gutter left of a line number to set a **red breakpoint dot**.
-2. **Right-click** the test's ▶ button → **Debug Test**.
-3. Chrome opens and pauses at your breakpoint — inspect variables, step
-   through line by line (F10), and watch what the browser does at each step.
-
-## Step 7 — Let VS Code find selectors for you
-
-With the Playwright extension:
-
-- **Pick locator**: click **"Pick locator"** in the Playwright section, then
-  click any element in the open Chrome window — the best selector appears in
-  VS Code. Copy it into your test.
-- **Record new**: click **"Record new"** to open Chrome and click through your
-  flow — Playwright *writes the test code for you* as you click. Great
-  starting point; then swap in the framework helpers (`openPage`, `RecordForm`).
-
-## Step 8 — See results and traces in VS Code
-
-- Hover a failed test → **"Show trace"** opens the trace viewer with a
-  filmstrip of every step.
-- The **Test Results** panel (bottom) shows the full error and console output.
-
----
-
-# ✍️ Write your own test
-
-Create a file in `tests/`, e.g. `tests/my-test.spec.ts`, then use the building
-blocks below. Run with `npm test` or the ▶ button in VS Code.
-
-### Open any page — standard or custom object
-
-```ts
-import { test } from '@playwright/test';
-import { openPage } from '../src/utils/navigation.js';
-
-test('open pages', async ({ page }) => {
-  await openPage(page, '/lightning/o/Account/list');     // standard object
-  await openPage(page, '/lightning/o/Invoice__c/list');  // custom object (__c)
-});
-```
-
-💡 Paste any path from your org's address bar (everything after `.com`) — it
-works against whichever org is connected.
-
-### Create a record — any object, by field label
-
-```ts
-import { RecordForm } from '../src/pages/recordForm.js';
-
-test('create an invoice', async ({ page }) => {
-  const invoice = new RecordForm(page, 'Invoice__c');  // 1. name the object
-  await invoice.openNew();                             // 2. open the New form
-  await invoice.setFields({                            // 3. fill by LABEL
-    Name: 'INV-001',
-    Status: 'Draft',       // picklist: just the option text
-    Paid: true,            // checkbox: true/false
-  });
-  const { recordId } = await invoice.save();           // 4. save + toast checked
-});
-```
-
-The component auto-detects each field's control type (text, picklist,
-checkbox, …) and handles the record-type chooser if your org shows one.
-
-### Upload a file — any widget, any file
-
-```ts
-import { uploadFiles, uploadToLightningFileUpload } from '../src/utils/fileUpload.js';
-
-// Standard Lightning "Upload Files" component:
-await uploadToLightningFileUpload(page, './data/contract.pdf');
-
-// A custom button/dropzone that opens the OS file picker:
-await uploadFiles(page, './data/contract.pdf', {
-  trigger: 'button:has-text("Upload Files")',
-});
-```
-
-### Set up test data via the API — no UI clicks
-
-```ts
-import { SfApi } from '../src/utils/sfApi.js';
-
-test('UI shows a record created via API', async ({ page }) => {
-  const api = new SfApi();                       // same dynamic org token
-  const id = await api.createRecord('Invoice__c', { Name: 'INV-999' });
-
-  await openPage(page, `/lightning/r/Invoice__c/${id}/view`);
-  // ... UI assertions ...
-
-  await api.deleteRecord('Invoice__c', id);      // clean up
-});
-```
-
-This is the fastest pattern for Salesforce testing: **create data via API,
-verify via UI, clean up via API** — no slow, flaky UI data entry.
-
-### Navigate like a user — App Launcher + Lightning waits
-
-```ts
-import { openViaAppLauncher, waitForLightning } from '../src/utils/lightning.js';
-
-test('open a tab by name', async ({ page }) => {
-  await openViaAppLauncher(page, 'Invoices');   // any app or object tab, by name
-  await waitForLightning(page);                 // spinners are gone — safe to act
-});
-```
-
-### Change org / page / files per run — no code edits
-
-```bash
-SF_TARGET_ORG=my-sandbox npm test               # different org
-SF_START_PATH=/lightning/o/Case/list npm test   # different landing page
-SF_UPLOAD_FILES=./data/other.pdf npm test       # different upload file
-```
-
-(Or copy `.env.example` to `.env` and set them there.)
-
----
-
-# 🗂 Data-driven tests from a mapping sheet (NPSP / Robot Framework style)
-
-UI tests are **automatically mapped to dynamic URLs** — and when you want
-explicit control, there's a **separate mapping sheet**:
-[`test-mappings.csv`](./test-mappings.csv) (opens directly in Excel).
-**One row = one generated test.** No code needed.
-
-| Column | What it does |
-| --- | --- |
-| `test_name` | Becomes the test's title |
-| `suite` | `mock` (runs in `npm run test:e2e`) or `live` (your org, `npm test`) |
-| `object` | Object API name — the URL is **auto-mapped** to `/lightning/o/<object>/list` |
-| `page_path` | Explicit page path — only needed to *override* the auto-mapping |
-| `upload_file` | Optional file to **upload dynamically** on that page |
-| `expect_heading` | Optional heading to assert after navigation |
-
-Example — these three lines are three complete tests:
-
-```csv
-test_name,suite,object,page_path,upload_file,expect_heading
-Accounts open,live,Account,,,
-Upload a contract,live,,/lightning/upload,data/contract.pdf,
-New invoice page,live,,/lightning/o/Invoice__c/new,,
-```
-
-How it works: `tests/data-driven.spec.ts` reads the sheet at run time and
-generates a Playwright test per row — navigate to the (auto-)mapped URL,
-assert the page, upload the mapped file if one is set. Add a row in Excel,
-save, re-run — that's the whole workflow. This mirrors how Salesforce's
-[NPSP](https://github.com/SalesforceFoundation/NPSP) is tested with
-[Robot Framework](https://robotframework.org/): keyword-driven helpers +
-data-driven mappings kept outside the code.
-
-Run just the sheet-driven tests: `npm run test:e2e:sheet` (mock rows) or
-`npx playwright test --grep @sheet` (live rows).
-
-# 🏔 UI test levels — run any level on its own
-
-The suite is a full UI test pyramid. Every test is tagged, so each level runs
-independently:
-
-| Level | What it verifies | Command |
-| --- | --- | --- |
-| **L1 Smoke** | Every key page loads (generated dynamically from a path list — add a path, get a test) | `npm run test:e2e:smoke` |
-| **L2 Functional** | A complete user journey: API data seed → App Launcher navigation → create record → upload file → API cleanup | `npm run test:e2e:functional` |
-| **L3 Negative & validation** | Required-field validation blocks save; unauthenticated access redirects to login; frontdoor and REST API reject bad tokens | `npm run test:e2e:negative` |
-| **L4 Accessibility** | Every form control has an associated label; buttons have accessible names; a record can be saved keyboard-only | `npm run test:e2e:a11y` |
-| **L5 Responsive** | Record creation works on mobile (iPhone 14) and tablet (iPad Air) viewports | `npm run test:e2e:responsive` |
-| **L6 Visual regression** | Pages match pixel baselines (opt-in: `VISUAL_TESTS=1`; record baselines once with `--update-snapshots`) | `VISUAL_TESTS=1 npm run test:e2e:visual` |
-
-The same tags work for your live-org tests in `tests/` — tag a test title with
-`@smoke` etc. and run `npx playwright test --grep @smoke`.
-
-# 📋 Quick command reference
-
-| I want to… | Command |
-| --- | --- |
-| Check everything works (no org) | `npm run test:e2e` |
-| See which org will be used | `npm run org:whoami` |
-| Run tests against my org | `npm test` |
-| Watch the browser while it runs | `npm run test:headed` |
-| Debug a test step by step | `npm run test:debug` |
-| Open the results report | `npm run report` |
-
-# 🔧 If something goes wrong
-
-| You see… | Do this |
-| --- | --- |
-| `Could not run the Salesforce CLI` | Install the `sf` CLI and reopen your terminal. |
-| `no active session` | Run `sf org login web` and log in again. |
-| Wrong org in `org:whoami` | `sf config set target-org=<alias>` |
-| Login page appears mid-test | Delete `.auth/org-session.json` and re-run. |
-| A field isn't found by `setFields` | Use the exact label shown on screen. |
-| `Upload file not found` | Path is relative to the project folder — check it exists. |
-
-Full debugging walkthrough (Inspector, locator picker, trace viewer,
-Salesforce-specific gotchas): **[USER_GUIDE.md](./USER_GUIDE.md)**.
-Deeper setup, CI, and configuration: **[GUIDE.md](./GUIDE.md)**.
-
----
-
-# Configuration (all optional, via `.env` or shell)
-
-| Variable | Purpose | Default |
-| --- | --- | --- |
-| `SF_TARGET_ORG` | Org username/alias override | default org in VS Code |
-| `SF_START_PATH` | Dynamic landing page | `/lightning/page/home` |
-| `SF_UPLOAD_FILES` | Comma-separated upload file paths | _(none)_ |
-| `SF_STORAGE_STATE` | Cached session location | `.auth/org-session.json` |
-| `SF_INSTANCE_URL` | Fallback base URL if CLI is unavailable | _(none)_ |
-| `PW_EXECUTABLE_PATH` | Use a system-provided Chromium (CI) | _(none)_ |
-
-# Project layout
-
-```
-playwright.config.ts        # dynamic baseURL + cached session (live-org tests)
-playwright.e2e.config.ts    # self-contained suite vs. built-in mock org
-src/
-  config/env.ts             # runtime-configurable values + URL resolver
-  pages/recordForm.ts       # RecordForm component (new record page)
-  utils/
-    orgAuth.ts              # reads default org from SF CLI, builds frontdoor URL
-    globalSetup.ts          # one-time frontdoor login -> storageState
-    navigation.ts           # openPage() dynamic URL navigation
-    fileUpload.ts           # dynamic UI file-upload helpers
-    sfApi.ts                # REST API test-data helper (create/query/delete)
-    lightning.ts            # App Launcher navigation + spinner waits
-  scripts/whoami.ts         # prints the resolved org
-tests/                      # your live-org tests
-tests-e2e/                  # mock org + mock CLI + 35 E2E tests (6 UI levels + sheet)
-USER_GUIDE.md               # hands-on user guide + debugging walkthrough
-GUIDE.md                    # project adoption, CI, configuration deep-dive
-```
-
-# References
-
-Patterns in this framework draw on the community's Salesforce automation work:
-[Salesforce's UI test automation guidance](https://developer.salesforce.com/blogs/2020/01/ui-test-automation-on-salesforce),
-[krutiunnithan/playwright-automation-framework](https://github.com/krutiunnithan/playwright-automation-framework)
-(API-based test data + fixtures),
-[TestLeafInc/playwright-salesforce](https://github.com/TestLeafInc/playwright-salesforce)
-(UI/API bridge, auto-login), and
-[foleyautomated/playwright-for-salesforce](https://github.com/foleyautomated/playwright-for-salesforce)
-(VS Code workflow),
-[SalesforceFoundation/NPSP](https://github.com/SalesforceFoundation/NPSP) and
-[Robot Framework](https://robotframework.org/) (keyword-driven helpers +
-data-driven mapping sheets kept outside the code — the model for
-`test-mappings.csv`).

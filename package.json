@@ -1,13 +1,12 @@
 {
-  "name": "playwright-dynamic-org-login",
+  "name": "salesforce-app",
+  "private": true,
   "version": "1.0.0",
-  "description": "Playwright + TypeScript framework that logs into the default Salesforce org connected to VS Code, with dynamic page URLs and dynamic UI file uploads.",
+  "description": "Salesforce App",
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
+    "lint": "eslint **/{aura,lwc}/**/*.js",
+    "test": "npm run test:unit",
     "test:e2e": "playwright test --config=playwright.e2e.config.ts",
     "test:e2e:headed": "playwright test --config=playwright.e2e.config.ts --headed",
     "test:e2e:smoke": "playwright test --config=playwright.e2e.config.ts --grep @smoke",
@@ -17,22 +16,44 @@
     "test:e2e:responsive": "playwright test --config=playwright.e2e.config.ts --grep @responsive",
     "test:e2e:visual": "playwright test --config=playwright.e2e.config.ts --grep @visual",
     "test:e2e:sheet": "playwright test --config=playwright.e2e.config.ts --grep @sheet",
+    "test:unit": "sfdx-lwc-jest",
+    "test:unit:watch": "sfdx-lwc-jest --watch",
+    "test:unit:debug": "sfdx-lwc-jest --debug",
+    "test:unit:coverage": "sfdx-lwc-jest --coverage",
     "report": "playwright show-report",
-    "org:whoami": "node --loader ts-node/esm src/scripts/whoami.ts"
+    "org:whoami": "node src/scripts/whoami.js",
+    "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
+    "prettier:verify": "prettier --check \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
+    "prepare": "husky || true",
+    "precommit": "lint-staged"
   },
-  "keywords": [
-    "playwright",
-    "salesforce",
-    "automation",
-    "sfdx",
-    "typescript"
-  ],
-  "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "1.61.1",
+    "@lwc/eslint-plugin-lwc": "^3.1.0",
+    "@playwright/test": "^1.61.1",
+    "@prettier/plugin-xml": "^3.4.1",
+    "@salesforce/eslint-config-lwc": "^4.0.0",
+    "@salesforce/eslint-plugin-aura": "^3.0.0",
+    "@salesforce/eslint-plugin-lightning": "^2.0.0",
+    "@salesforce/sfdx-lwc-jest": "^7.0.2",
     "@types/node": "^22.10.0",
-    "dotenv": "^16.4.7",
-    "ts-node": "^10.9.2",
+    "eslint": "^9.29.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.5.3",
+    "prettier-plugin-apex": "^2.2.6",
     "typescript": "^5.7.2"
+  },
+  "lint-staged": {
+    "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
+      "prettier --write"
+    ],
+    "**/{aura,lwc}/**/*.js": [
+      "eslint"
+    ],
+    "**/lwc/**": [
+      "sfdx-lwc-jest -- --bail --findRelatedTests --passWithNoTests"
+    ]
   }
 }
